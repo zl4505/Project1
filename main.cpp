@@ -1,3 +1,13 @@
+/**
+* Author: zhenan liu
+* Assignment: Simple 2D Scene
+* Date due: after spring break
+* I pledge that I have completed this assignment without
+* collaborating with anyone else, in conformance with the
+* NYU School of Engineering Policies and Procedures on
+* Academic Misconduct.
+**/
+
 #define STB_IMAGE_IMPLEMENTATION
 #define GL_SILENCE_DEPRECATION
 #define GL_GLEXT_PROTOTYPES 1
@@ -126,27 +136,39 @@ void update() {
     float delta_time = current_ticks - prev_ticks;
     prev_ticks = current_ticks;
 
-    // Update triangle position (horizontal movement)
+    // Triangle movement: X back and forth, Y sine wave
     g_triangle_x += g_triangle_speed * delta_time;
     if (g_triangle_x > 3.0f || g_triangle_x < -3.0f) {
         g_triangle_speed *= -1;
     }
 
-    // Update rectangle rotation
+    float triangle_y = sin(current_ticks * 2.0f); // Wavy motion
+
+    // Triangle scale: pulsate
+    float scale_factor = 1.0f + 0.25f * sin(current_ticks * 4.0f); // Grows and shrinks
+
+    // Rectangle circular motion (cosine and sine)
+    float rect_radius = 1.5f;
+    float rect_x = cos(current_ticks) * rect_radius;
+    float rect_y = sin(current_ticks) * rect_radius;
+
+    // Update rotation
     g_rotation_angle += glm::radians(90.0f) * delta_time;
 
     // Reset matrices
     g_triangle_matrix = glm::mat4(1.0f);
     g_rectangle_matrix = glm::mat4(1.0f);
 
-    // Transform triangle
-    g_triangle_matrix = glm::translate(g_triangle_matrix, glm::vec3(g_triangle_x, 0.0f, 0.0f));
+    // Transform triangle (pulsing + curved path)
+    g_triangle_matrix = glm::translate(g_triangle_matrix, glm::vec3(g_triangle_x, triangle_y, 0.0f));
+    g_triangle_matrix = glm::scale(g_triangle_matrix, glm::vec3(scale_factor, scale_factor, 1.0f));
 
-    // Transform rectangle (follow triangle with offset)
-    g_rectangle_matrix = glm::translate(g_rectangle_matrix,
-        glm::vec3(g_triangle_x + 1.5f, 0.0f, 0.0f));
+    // Transform rectangle (circular movement + rotation)
+    g_rectangle_matrix = glm::translate(g_rectangle_matrix, glm::vec3(rect_x, rect_y, 0.0f));
     g_rectangle_matrix = glm::rotate(g_rectangle_matrix, g_rotation_angle, glm::vec3(0.0f, 0.0f, 1.0f));
 }
+
+
 
 void draw_object(glm::mat4& model_matrix, GLuint texture, float* vertices, float* tex_coords) {
     g_shader_program.set_model_matrix(model_matrix);
@@ -213,4 +235,3 @@ int main(int argc, char* argv[]) {
     shutdown();
     return 0;
 }
-
